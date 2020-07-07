@@ -53,13 +53,57 @@ class App extends React.Component{
       })      
   }
 
+  componentDidUpdate(prevProps, prevState){
+    if(this.state.searchTerm !== prevState.searchTerm){
+      axios.get(`https://api.github.com/users/${this.state.searchTerm}`)
+      .then(res=>{
+        this.setState({
+          githubData: res.data
+        })
+        
+      })
+      .catch(err =>{
+        console.log(err);
+        this.setState({
+          error: true
+        })
+      })
+
+      axios.get(`https://api.github.com/users/${this.state.searchTerm}/followers`)
+      .then(res =>{
+        const followers = res.data
+        this.setState({
+          followerData:[]
+        })
+        followers.forEach(follower =>{
+          axios.get(follower.url)
+            .then(res =>{
+              
+              this.setState({
+                followerData: [
+                  ...this.state.followerData,
+                  res.data
+                ]
+              })
+              
+            })
+            .catch(err =>{
+              console.log(err);
+            })
+        })
+      })
+      .catch(err =>{
+        console.log(err);
+        
+      })
+    }
+  }
+
   searchProfile = profile => {
     this.setState({
       searchTerm: profile
     })
   }
-
-
 
   render(){
     if(this.state.githubData.length === 0){
@@ -69,14 +113,13 @@ class App extends React.Component{
           {this.state.error && <p>We encountered an error please try again later</p>}
         </div>
       )
-        
     }
 
     return(
       <div className='container'>
         <SearchUser searchProfile={this.searchProfile} />
         <p>Searched Username: {this.state.searchTerm}</p>
-        <GitCard key={this.state.githubData.id}user={this.state.githubData}/>
+        <GitCard key={this.state.githubData.id} user={this.state.githubData}/>
         <p className='followers-title'>Followers</p>
         {
           this.state.followerData.map( follower =>{
