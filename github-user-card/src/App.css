@@ -128,5 +128,7 @@ body {
   margin-bottom: 16px;
 }
 
-
-
+.followers-title{
+  font-size: 3.2rem;
+  padding: 2%;
+}
